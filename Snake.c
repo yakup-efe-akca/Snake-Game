@@ -1,8 +1,8 @@
 #include "raylib.h"
 
 #define CELL_SIZE 60
-#define ROWS 6
-#define COLS 8
+#define ROWS 15
+#define COLS 20
 
 typedef struct {
     int row;
@@ -69,7 +69,17 @@ int main(void) {
     bool gameOver = false;
 
     while (!WindowShouldClose()) {
-
+        
+        if (IsKeyPressed(KEY_UP) && direction != DOWN)
+            direction = UP;
+        else if (IsKeyPressed(KEY_DOWN) && direction != UP)
+            direction = DOWN;
+        else if (IsKeyPressed(KEY_LEFT) && direction != RIGHT)
+            direction = LEFT;
+        else if (IsKeyPressed(KEY_RIGHT) && direction != LEFT)
+            direction = RIGHT;
+            
+            
         moveTimer += GetFrameTime();
         if (moveTimer >= 0.2f && !gameOver) {
             
@@ -95,21 +105,18 @@ int main(void) {
             }
             else {
                 Position oldTail = snake.body[snake.front];
-                occupied[oldTail.row][oldTail.col] = false;
-                dequeue(&snake);
-                enqueue(&snake, nextHead);
-                occupied[nextHead.row][nextHead.col] = true;
+                if(occupied[nextHead.row][nextHead.col] &&
+                    !(nextHead.row == oldTail.row && nextHead.col == oldTail.col)) {
+                    gameOver = true;
+                }
+                else {
+                    occupied[oldTail.row][oldTail.col] = false;
+                    dequeue(&snake);
+                    enqueue(&snake, nextHead);
+                    occupied[nextHead.row][nextHead.col] = true;
+                }
             }
         }
-
-        if (IsKeyPressed(KEY_UP) && direction != DOWN)
-            direction = UP;
-        else if (IsKeyPressed(KEY_DOWN) && direction != UP)
-            direction = DOWN;
-        else if (IsKeyPressed(KEY_LEFT) && direction != RIGHT)
-            direction = LEFT;
-        else if (IsKeyPressed(KEY_RIGHT) && direction != LEFT)
-            direction = RIGHT;
         
 
         BeginDrawing();
@@ -132,7 +139,18 @@ int main(void) {
             Position pos = snake.body[index];
             DrawRectangle(pos.col * CELL_SIZE, pos.row * CELL_SIZE, CELL_SIZE, CELL_SIZE, GREEN);
         }
+        
+        if (gameOver) {
+            const char *text = "GAME OVER";
+            int fontSize = 50;
 
+            int textWidth = MeasureText(text, fontSize);
+
+            int x = (GetScreenWidth() - textWidth) / 2;
+            int y = (GetScreenHeight() - fontSize) / 2;
+
+            DrawText(text, x, y, fontSize, RED);
+        }
         EndDrawing();
     }
 
