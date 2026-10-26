@@ -1,0 +1,15 @@
+# Compiled executable
+Snake
+
+# Object files
+*.o
+
+# macOS files
+.DS_Store
+*.dSYM/
+
+# Build directories
+build/
+
+# Local VS Code settings
+.vscode/

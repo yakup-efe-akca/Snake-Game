@@ -103,26 +103,35 @@ int main(void) {
     SetTargetFPS(60);
     float moveTimer = 0.0f;
     bool gameOver = false;
-    
+    bool directionChanged = false;
 
     while (!WindowShouldClose()) {
         
         if (gameOver && IsKeyPressed(KEY_R)) {
             resetGame(&snake, occupied, &food);
             direction = RIGHT;
+            directionChanged = false;
             score = snake.length - 1;
             moveTimer = 0.0f;
             gameOver = false;
         }
         
-        if (IsKeyPressed(KEY_UP) && direction != DOWN)
+        if (IsKeyPressed(KEY_UP) && direction != DOWN && !directionChanged) {
             direction = UP;
-        else if (IsKeyPressed(KEY_DOWN) && direction != UP)
+            directionChanged = true;
+        }
+        else if (IsKeyPressed(KEY_DOWN) && direction != UP && !directionChanged) {
             direction = DOWN;
-        else if (IsKeyPressed(KEY_LEFT) && direction != RIGHT)
+            directionChanged = true;
+        }
+        else if (IsKeyPressed(KEY_LEFT) && direction != RIGHT && !directionChanged) {
             direction = LEFT;
-        else if (IsKeyPressed(KEY_RIGHT) && direction != LEFT)
+            directionChanged = true;
+        }
+        else if (IsKeyPressed(KEY_RIGHT) && direction != LEFT && !directionChanged) {
             direction = RIGHT;
+            directionChanged = true;
+        }
             
             
         moveTimer += GetFrameTime();
@@ -178,6 +187,7 @@ int main(void) {
                     }
                 }
             }
+            directionChanged = false;
         }
         
 
@@ -212,14 +222,22 @@ int main(void) {
         
         if (gameOver) {
             const char *text = "GAME OVER";
+            const char *restartText = "PRESS R TO RESTART";
+
             int fontSize = 50;
+            int restartFontSize = 24;
 
             int textWidth = MeasureText(text, fontSize);
-
             int x = (GetScreenWidth() - textWidth) / 2;
-            int y = (GetScreenHeight() - fontSize) / 2;
+            int y = GetScreenHeight() / 2 - 50;
 
             DrawText(text, x, y, fontSize, RED);
+
+            int restartWidth = MeasureText(restartText, restartFontSize);
+            int restartX = (GetScreenWidth() - restartWidth) / 2;
+            int restartY = y + 70;
+
+            DrawText(restartText, restartX, restartY, restartFontSize, DARKGRAY);
         }
         EndDrawing();
     }
