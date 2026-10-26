@@ -54,6 +54,8 @@ int main(void) {
     enqueue(&snake, (Position){3, 2});
     enqueue(&snake, (Position){3, 3});
     enqueue(&snake, (Position){3, 4});
+    
+    int score = snake.length - 1;
 
     for (int i = 0; i < snake.length; i++) {
         
@@ -62,11 +64,19 @@ int main(void) {
     
         occupied[pos.row][pos.col] = true;
     }
-
+    
+    Position food;
+    do {
+        food.row = GetRandomValue(0, ROWS - 1);
+        food.col = GetRandomValue(0, COLS - 1);
+    } while (occupied[food.row][food.col]);
+    
+    
     InitWindow(COLS * CELL_SIZE, ROWS * CELL_SIZE, "Snake Game");
     SetTargetFPS(60);
     float moveTimer = 0.0f;
     bool gameOver = false;
+    
 
     while (!WindowShouldClose()) {
         
@@ -96,6 +106,9 @@ int main(void) {
             else if (direction == DOWN) {
                 nextHead.row++;
             }
+            bool ateFood = (nextHead.row == food.row &&
+                nextHead.col == food.col);
+                
             moveTimer -= 0.2f;
             if(nextHead.row < 0 ||
                     nextHead.row >= ROWS || 
@@ -106,14 +119,28 @@ int main(void) {
             else {
                 Position oldTail = snake.body[snake.front];
                 if(occupied[nextHead.row][nextHead.col] &&
-                    !(nextHead.row == oldTail.row && nextHead.col == oldTail.col)) {
+                    (ateFood ||  
+                        !(nextHead.row == oldTail.row && nextHead.col == oldTail.col))) {
                     gameOver = true;
                 }
                 else {
-                    occupied[oldTail.row][oldTail.col] = false;
-                    dequeue(&snake);
+                    if(!ateFood) {
+                        occupied[oldTail.row][oldTail.col] = false;
+                        dequeue(&snake);
+                    }
                     enqueue(&snake, nextHead);
                     occupied[nextHead.row][nextHead.col] = true;
+                    if (ateFood) {
+                        score++;
+                        if(snake.length < ROWS * COLS) {
+                            do {
+                                food.row = GetRandomValue(0, ROWS - 1);
+                                food.col = GetRandomValue(0, COLS - 1);
+                            } while (occupied[food.row][food.col]);
+                        }else {
+                            gameOver = true;
+                        }
+                    }
                 }
             }
         }
@@ -139,6 +166,14 @@ int main(void) {
             Position pos = snake.body[index];
             DrawRectangle(pos.col * CELL_SIZE, pos.row * CELL_SIZE, CELL_SIZE, CELL_SIZE, GREEN);
         }
+        
+        DrawCircle(
+            food.col * CELL_SIZE + CELL_SIZE / 2,
+            food.row * CELL_SIZE + CELL_SIZE / 2,
+            CELL_SIZE / 4,
+            RED
+        );
+        DrawText(TextFormat("SCORE: %d", score), 10, 10, 24, BLACK);
         
         if (gameOver) {
             const char *text = "GAME OVER";
