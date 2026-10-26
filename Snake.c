@@ -40,6 +40,33 @@ void dequeue(Snake *snake) {
     snake->length -= 1;
 }
 
+void resetGame(Snake *snake, bool occupied[ROWS][COLS], Position *food) {
+    snake->front = 0;
+    snake->rear = -1;
+    snake->length = 0;
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            occupied[row][col] = false;
+        }
+    }
+    enqueue(snake, (Position){3, 1});
+    enqueue(snake, (Position){3, 2});
+    enqueue(snake, (Position){3, 3});
+    enqueue(snake, (Position){3, 4});
+    
+    for (int i = 0; i < snake->length; i++) {
+        
+        int index = (snake->front + i) % (ROWS * COLS);
+        Position pos = snake->body[index];
+    
+        occupied[pos.row][pos.col] = true;
+    }
+    do {
+        food->row = GetRandomValue(0, ROWS - 1);
+        food->col = GetRandomValue(0, COLS - 1);
+    } while (occupied[food->row][food->col]);
+}
+
 int main(void) {
 
     Direction direction = RIGHT;
@@ -79,6 +106,14 @@ int main(void) {
     
 
     while (!WindowShouldClose()) {
+        
+        if (gameOver && IsKeyPressed(KEY_R)) {
+            resetGame(&snake, occupied, &food);
+            direction = RIGHT;
+            score = snake.length - 1;
+            moveTimer = 0.0f;
+            gameOver = false;
+        }
         
         if (IsKeyPressed(KEY_UP) && direction != DOWN)
             direction = UP;
